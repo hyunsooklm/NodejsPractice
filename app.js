@@ -171,47 +171,53 @@ var app = http.createServer(function (request, response) {
         // })
         db.query(`INSERT INTO TOPIC
         (title,description,created,author_id) 
-        VALUE(?,?,now(),1)`,[title,description],function(err,result){
-          if(err){
+        VALUE(?,?,now(),1)`, [title, description], function (err, result) {
+          if (err) {
             throw err;
           }
-          else{
+          else {
             response.writeHead(302, {         //3.xx로 시작된 코드는 Redirection을 의미한다. 
-            'Location': `/?id=${result.insertId}`
-            //add other headers here...
-          });
-          response.end();
-        }
-      });
-     
+              'Location': `/?id=${result.insertId}`
+              //add other headers here...
+            });
+            response.end();
+          }
+        });
+
       });
 
     }
   }
   else if (pathname === "/update") {
-    fs.readdir('./contents', function (err, filelist) {
-      fs.readFile(`contents/${title}`, 'utf8', function (err, description) {
-        var body = `<form action="/update_process" method="POST" >
-      <input type="hidden" name="object" value="${title}">
-      <p><input type="text" name="title" placeholder="title" value="${title}"></p>
-      <p>
-        <textarea name="description" placeholder="description">${description}</textarea>
-      </p>
-      <p>
-        <input type="submit">
-      </p>
-    </form>`;
-
-        var list = Template.List(filelist, resultlist);
-        var control = `
-        <a href="/create">create</a>
-        <a href=/update?id=${queryData.id}>update</a>`
-        title = 'WEB-update';
-        html = Template.HTML(title, list, body, control);
-        response.writeHead(200);
-        response.end(html);
-      });
-
+    db.query('SELECT * FROM TOPIC', function (err1, result) {//db client에서 db server에 쿼리날리기 
+      if (err1) {//error발생시
+        throw err1;
+      }
+      else {
+        db.query(`SELECT * FROM TOPIC WHERE ID=?`,[queryData.id], function (err, data) {
+          if (err) {
+            throw err;
+          }
+          var body = `<form action="/update_process" method="POST" >
+        <input type="hidden" name="object" value="${data[0].id}">
+        <p><input type="text" name="title" placeholder="title" value="${data[0].title}"></p>
+        <p>
+          <textarea name="description" placeholder="description">${data[0].description}</textarea>
+        </p>
+        <p>
+          <input type="submit">
+        </p>
+      </form>`;
+          var list = Template.List(result, resultlist);
+          var control = `
+          <a href="/create">create</a>
+          <a href=/update?id=${queryData.id}>update</a>`;
+          title = 'WEB-update';
+          html = Template.HTML(title, list, body, control);
+          response.writeHead(200);
+          response.end(html);
+        });
+      }
     });
   }
   else if (pathname === "/update_process") {   //파일 수정
@@ -223,26 +229,29 @@ var app = http.createServer(function (request, response) {
       });
       request.on('end', function () {
         post = qs.parse(body);
-        title = post.title; //변경된 title
-        description = post.description; //변경된 내용
-        var object = post.object; //원본 파일
-        fs.rename(`./contents/${object}`, `./contents/${title}`, function (err) {
+        console.log(post);
+        db.query('UPDATE TOPIC SET title=?,description=?,author_id=1 WHERE ID=?',[post.title,post.description,post.object] ,function (err, result) {
           if (err) {
-            console.log(`error:${err}`);
+            throw err;
           }
-          console.log('rename success');
-          fs.writeFile(`./contents/${title}`, description, 'utf8', function (err) {
-            if (err) throw err;
+          else {
             response.writeHead(302, {         //3.xx로 시작된 코드는 Redirection을 의미한다. 
-              'Location': `/?id=${title}`
+              'Location': `/?id=${post.object}`
               //add other headers here...
             });
             response.end('success');
-          })
+          }
         })
+        // fs.writeFile(`./contents/${title}`, description, 'utf8', function (err) {
+        //   if (err) throw err;
+        //   response.writeHead(302, {         //3.xx로 시작된 코드는 Redirection을 의미한다. 
+        //     'Location': `/?id=${title}`
+        //     //add other headers here...
+        //   });
+        //   response.end('success');
+        // })
       })
     }
-
   }
   else if (pathname === "/delete_process") {
     var post = {};
