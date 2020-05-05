@@ -1,7 +1,6 @@
 // 괄호 짝찾을땐 ctrl+shift+\
 // 자바스크립트 매개변수에 원시형-> 다른 주소 객체,배열형 -> 같은주소 값을 넘긴다.
 var http = require('http');
-var fs = require('fs');
 var url = require('url');
 var qs = require('querystring');
 var Template = require('./lib/Template.js');
@@ -65,13 +64,15 @@ var app = http.createServer(function (request, response) {
             response.end('Not found');
           }//id값이 이상한 곳으로 들어오면
           else {
-            db.query(`SELECT * FROM TOPIC WHERE ID=?`, [queryData.id], function (err2, topic) {
+            db.query('SELECT * FROM TOPIC LEFT JOIN AUTHOR ON TOPIC.AUTHOR_ID=AUTHOR.ID WHERE TOPIC.ID=?', [queryData.id], function (err2, topic) {
               if (err2) {
                 throw err2;
               }
               title = topic[0].title;
               description = topic[0].description;
               body += `<p>${description}</p>`;
+              body += `<p>by ${topic[0].name}...</p>`;
+
               var control = `
               <a href="/create">create</a>
               <a href="/update?id=${queryData.id}">update</a>
@@ -88,32 +89,6 @@ var app = http.createServer(function (request, response) {
         }
       });
     }
-    // fs.readdir('./contents', function (err, filelist) {
-    //   if (resultlist.indexOf(queryData.id) == -1) {    //querystring이 없는값으로 들어오면
-    //     response.writeHead(404);
-    //     response.end('Not found');
-    //   } //id값이 이상한 곳으로 들어오면
-
-    //   else {  //id값이 있는 애들쪽으로 들어온다면
-    //     fs.readFile(`contents/${title}`, 'utf8', function (err, description) {
-    //       var sanitize_title = sanitizehtml(title);
-    //       var sanitize_description = sanitizehtml(description, { allowedTags: ['a', 'h1'] });
-
-    //       if (err) throw err;
-    //       body += `<p>${sanitize_description}</p>`;
-    //       var control = `
-    //       <a href="/update?id=${sanitize_title}">update</a>
-    //       <form action="delete_process" method="POST">
-    //       <input type="hidden" name="object" value="${sanitize_title}">
-    //       <input type="submit" value="delete" onsubmit="alert('delete?')"/>
-    //       </form>
-    //       `
-    //       html = Template.HTML(sanitize_title, list, body, control);
-    //       response.writeHead(200);
-    //       response.end(html);
-    //     }
-    //     );
-    //   }
   }
   else if (pathname === "/create") {
     body = `<form action="http://localhost:8088/create_process" method="POST" >
@@ -125,13 +100,6 @@ var app = http.createServer(function (request, response) {
         <input type="submit">
       </p>
     </form>`;
-    // fs.readdir('./contents', function (err, filelist) {
-    //   var list = Template.List(filelist, resultlist);
-    //   title = 'WEB-create';
-    //   html = Template.HTML(title, list, body, '');
-    //   response.writeHead(200);
-    //   response.end(html);
-    // });
     db.query('SELECT * FROM TOPIC', function (err1, result) {//db client에서 db server에 쿼리날리기 
       if (err1) {//error발생시
         throw err1;
@@ -158,17 +126,6 @@ var app = http.createServer(function (request, response) {
         console.log(post);
         var title = post.title;
         var description = post.description;
-        // var sanitize_title=sanitizehtml(title);
-        // var sanitize_description=sanitizehtml(description);
-        // fs.writeFile(`./contents/${title}`, description, 'utf8', function (err) {
-        //   if (err) throw err;
-        //   console.log("file write success");
-        //   response.writeHead(302, {         //3.xx로 시작된 코드는 Redirection을 의미한다. 
-        //     'Location': `/?id=${title}`
-        //     //add other headers here...
-        //   });
-        //   response.end('success');
-        // })
         db.query(`INSERT INTO TOPIC
         (title,description,created,author_id) 
         VALUE(?,?,now(),1)`, [title, description], function (err, result) {
@@ -189,33 +146,44 @@ var app = http.createServer(function (request, response) {
     }
   }
   else if (pathname === "/update") {
-    db.query('SELECT * FROM TOPIC', function (err1, result) {//db client에서 db server에 쿼리날리기 
+    db.query('SELECT * FROM TOPIC', function (err1, result1) {//db client에서 db server에 쿼리날리기 
       if (err1) {//error발생시
         throw err1;
       }
       else {
-        db.query(`SELECT * FROM TOPIC WHERE ID=?`,[queryData.id], function (err, data) {
-          if (err) {
-            throw err;
+        db.query('SELECT * FROM AUTHOR', function (err2, result2) {  //author테이블을 가져오자
+          if (err2) {
+            throw err2;
           }
-          var body = `<form action="/update_process" method="POST" >
-        <input type="hidden" name="object" value="${data[0].id}">
-        <p><input type="text" name="title" placeholder="title" value="${data[0].title}"></p>
-        <p>
-          <textarea name="description" placeholder="description">${data[0].description}</textarea>
-        </p>
-        <p>
-          <input type="submit">
-        </p>
-      </form>`;
-          var list = Template.List(result, resultlist);
-          var control = `
-          <a href="/create">create</a>
-          <a href=/update?id=${queryData.id}>update</a>`;
-          title = 'WEB-update';
-          html = Template.HTML(title, list, body, control);
-          response.writeHead(200);
-          response.end(html);
+          else {
+            db.query(`SELECT * FROM TOPIC WHERE ID=?`, [queryData.id], function (err3, data) {
+              if (err3) {
+                throw err3;
+              }
+              var option = Template.NameOption(result2,data[0].author_id);
+              var body = `<form action="/update_process" method="POST" >
+            <input type="hidden" name="object" value="${data[0].id}">
+            <p><input type="text" name="title" placeholder="title" value="${data[0].title}"></p>
+            <p>
+              <textarea name="description" placeholder="description">${data[0].description}</textarea>
+            </p>
+            <p>
+            ${option}
+            </p>
+            <p>
+              <input type="submit">
+            </p>
+          </form>`;
+              var list = Template.List(result1, resultlist);
+              var control = `
+              <a href="/create">create</a>
+              <a href=/update?id=${queryData.id}>update</a>`;
+              title = 'WEB-update';
+              html = Template.HTML(title, list, body, control);
+              response.writeHead(200);
+              response.end(html);
+            });
+          }
         });
       }
     });
@@ -230,7 +198,7 @@ var app = http.createServer(function (request, response) {
       request.on('end', function () {
         post = qs.parse(body);
         console.log(post);
-        db.query('UPDATE TOPIC SET title=?,description=?,author_id=1 WHERE ID=?',[post.title,post.description,post.object] ,function (err, result) {
+        db.query('UPDATE TOPIC SET title=?,description=?,author_id=? WHERE ID=?', [post.title, post.description,post.author_id, post.object], function (err, result) {
           if (err) {
             throw err;
           }
@@ -242,14 +210,6 @@ var app = http.createServer(function (request, response) {
             response.end('success');
           }
         })
-        // fs.writeFile(`./contents/${title}`, description, 'utf8', function (err) {
-        //   if (err) throw err;
-        //   response.writeHead(302, {         //3.xx로 시작된 코드는 Redirection을 의미한다. 
-        //     'Location': `/?id=${title}`
-        //     //add other headers here...
-        //   });
-        //   response.end('success');
-        // })
       })
     }
   }
@@ -263,24 +223,16 @@ var app = http.createServer(function (request, response) {
       request.on('end', function () {
         post = qs.parse(body);
         console.log(post);
-        db.query('DELETE FROM TOPIC WHERE id=?',[post.id],function(err,result){
-          if(err){
+        db.query('DELETE FROM TOPIC WHERE id=?', [post.id], function (err, result) {
+          if (err) {
             throw err;
           }
-          else{
+          else {
             console.log('delete success!');
             response.writeHead(302, { 'Location': '/' });
-            response.end();  
+            response.end();
           }
-        })       
-        // fs.unlink(`./contents/${object}`, function (err) {
-        //   if (err) {
-        //     console.log(`delete error:${err}`);
-        //   }
-        //   console.log('delete success!');
-        //   response.writeHead(302, { 'Location': '/' });
-        //   response.end();
-        // })
+        })
       })
     }
   }
