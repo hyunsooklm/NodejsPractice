@@ -76,7 +76,7 @@ var app = http.createServer(function (request, response) {
               <a href="/create">create</a>
               <a href="/update?id=${queryData.id}">update</a>
             <form action="delete_process" method="POST">
-            <input type="hidden" name="object" value="${queryData.id}">
+            <input type="hidden" name="id" value="${queryData.id}">
             <h2><input type="submit" value="delete" onsubmit="alert('delete?')"/></h2>
             </form>
             `
@@ -262,15 +262,25 @@ var app = http.createServer(function (request, response) {
       });
       request.on('end', function () {
         post = qs.parse(body);
-        var object = post.object; //이녀석을 삭제하면 된다.
-        fs.unlink(`./contents/${object}`, function (err) {
-          if (err) {
-            console.log(`delete error:${err}`);
+        console.log(post);
+        db.query('DELETE FROM TOPIC WHERE id=?',[post.id],function(err,result){
+          if(err){
+            throw err;
           }
-          console.log('delete success!');
-          response.writeHead(302, { 'Location': '/' });
-          response.end();
-        })
+          else{
+            console.log('delete success!');
+            response.writeHead(302, { 'Location': '/' });
+            response.end();  
+          }
+        })       
+        // fs.unlink(`./contents/${object}`, function (err) {
+        //   if (err) {
+        //     console.log(`delete error:${err}`);
+        //   }
+        //   console.log('delete success!');
+        //   response.writeHead(302, { 'Location': '/' });
+        //   response.end();
+        // })
       })
     }
   }
