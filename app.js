@@ -65,7 +65,7 @@ var app = http.createServer(function (request, response) {
             response.end('Not found');
           }//id값이 이상한 곳으로 들어오면
           else {
-            db.query(`SELECT * FROM TOPIC WHERE ID=?`,[queryData.id], function (err2, topic) {
+            db.query(`SELECT * FROM TOPIC WHERE ID=?`, [queryData.id], function (err2, topic) {
               if (err2) {
                 throw err2;
               }
@@ -125,14 +125,26 @@ var app = http.createServer(function (request, response) {
         <input type="submit">
       </p>
     </form>`;
-    fs.readdir('./contents', function (err, filelist) {
-      var list = Template.List(filelist, resultlist);
-      title = 'WEB-create';
-      html = Template.HTML(title, list, body, '');
-      response.writeHead(200);
-      response.end(html);
-    });
+    // fs.readdir('./contents', function (err, filelist) {
+    //   var list = Template.List(filelist, resultlist);
+    //   title = 'WEB-create';
+    //   html = Template.HTML(title, list, body, '');
+    //   response.writeHead(200);
+    //   response.end(html);
+    // });
+    db.query('SELECT * FROM TOPIC', function (err1, result) {//db client에서 db server에 쿼리날리기 
+      if (err1) {//error발생시
+        throw err1;
+      }
+      else {
+        var list = Template.List(result, resultlist);
+        title = 'WEB-create';
+        html = Template.HTML(title, list, body, '');
+        response.writeHead(200);
+        response.end(html);
 
+      }
+    });
   }
   else if (pathname === "/create_process") { //post방식으로 전송된 데이터 받기.
     var post = {};
@@ -143,19 +155,35 @@ var app = http.createServer(function (request, response) {
       });
       request.on('end', function () {
         post = qs.parse(body);
+        console.log(post);
         var title = post.title;
         var description = post.description;
         // var sanitize_title=sanitizehtml(title);
         // var sanitize_description=sanitizehtml(description);
-        fs.writeFile(`./contents/${title}`, description, 'utf8', function (err) {
-          if (err) throw err;
-          console.log("file write success");
-          response.writeHead(302, {         //3.xx로 시작된 코드는 Redirection을 의미한다. 
-            'Location': `/?id=${title}`
+        // fs.writeFile(`./contents/${title}`, description, 'utf8', function (err) {
+        //   if (err) throw err;
+        //   console.log("file write success");
+        //   response.writeHead(302, {         //3.xx로 시작된 코드는 Redirection을 의미한다. 
+        //     'Location': `/?id=${title}`
+        //     //add other headers here...
+        //   });
+        //   response.end('success');
+        // })
+        db.query(`INSERT INTO TOPIC
+        (title,description,created,author_id) 
+        VALUE(?,?,now(),1)`,[title,description],function(err,result){
+          if(err){
+            throw err;
+          }
+          else{
+            response.writeHead(302, {         //3.xx로 시작된 코드는 Redirection을 의미한다. 
+            'Location': `/?id=${result.insertId}`
             //add other headers here...
           });
-          response.end('success');
-        })
+          response.end();
+        }
+      });
+     
       });
 
     }
