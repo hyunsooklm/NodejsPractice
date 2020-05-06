@@ -6,19 +6,7 @@ var qs = require('querystring');
 var Template = require('./lib/Template.js');
 var isEmpty = require('./lib/Empty.js');
 var sanitizehtml = require('sanitize-html');
-var mysql = require('mysql');
-var db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'kimhs1019@',
-  database: 'hyunsoo_db'
-});
-db.connect(function (err) {
-  if (err) {
-    console.error('error connectiong' + err.stack);
-    return;
-  }
-})
+var db = require('./lib/DB_Template.js');
 
 var app = http.createServer(function (request, response) {
   var _url = request.url;
