@@ -91,26 +91,35 @@ var app = http.createServer(function (request, response) {
     }
   }
   else if (pathname === "/create") {
-    body = `<form action="http://localhost:8088/create_process" method="POST" >
+    db.query('SELECT * FROM AUTHOR', function (err1, result1) {  //author테이블을 가져오자
+      if (err1) {
+        throw err1;
+      }
+      else {
+        var option = Template.NameOption(result1, '');
+        body = `<form action="http://localhost:8088/create_process" method="POST" >
       <p><input type="text" name="title" placeholder="title"></p>
       <p>
         <textarea name="description" placeholder="description"></textarea>
       </p>
       <p>
+      ${option}
+      <p>
         <input type="submit">
       </p>
     </form>`;
-    db.query('SELECT * FROM TOPIC', function (err1, result) {//db client에서 db server에 쿼리날리기 
-      if (err1) {//error발생시
-        throw err1;
-      }
-      else {
-        var list = Template.List(result, resultlist);
-        title = 'WEB-create';
-        html = Template.HTML(title, list, body, '');
-        response.writeHead(200);
-        response.end(html);
-
+        db.query('SELECT * FROM TOPIC', function (err2, result2) {//db client에서 db server에 쿼리날리기 
+          if (err2) {//error발생시
+            throw err2;
+          }
+          else {
+            var list = Template.List(result2, resultlist);
+            title = 'WEB-create';
+            html = Template.HTML(title, list, body, '');
+            response.writeHead(200);
+            response.end(html);
+          }
+        });
       }
     });
   }
@@ -126,9 +135,10 @@ var app = http.createServer(function (request, response) {
         console.log(post);
         var title = post.title;
         var description = post.description;
+        var author_id=post.author_id;
         db.query(`INSERT INTO TOPIC
         (title,description,created,author_id) 
-        VALUE(?,?,now(),1)`, [title, description], function (err, result) {
+        VALUE(?,?,now(),?)`, [title, description,author_id], function (err, result) {
           if (err) {
             throw err;
           }
@@ -160,7 +170,7 @@ var app = http.createServer(function (request, response) {
               if (err3) {
                 throw err3;
               }
-              var option = Template.NameOption(result2,data[0].author_id);
+              var option = Template.NameOption(result2, data[0].author_id);
               var body = `<form action="/update_process" method="POST" >
             <input type="hidden" name="object" value="${data[0].id}">
             <p><input type="text" name="title" placeholder="title" value="${data[0].title}"></p>
@@ -198,7 +208,7 @@ var app = http.createServer(function (request, response) {
       request.on('end', function () {
         post = qs.parse(body);
         console.log(post);
-        db.query('UPDATE TOPIC SET title=?,description=?,author_id=? WHERE ID=?', [post.title, post.description,post.author_id, post.object], function (err, result) {
+        db.query('UPDATE TOPIC SET title=?,description=?,author_id=? WHERE ID=?', [post.title, post.description, post.author_id, post.object], function (err, result) {
           if (err) {
             throw err;
           }
