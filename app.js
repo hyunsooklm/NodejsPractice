@@ -3,6 +3,7 @@
 var http = require('http');
 var url = require('url');
 var topic=require('./lib/topic.js');
+var author=require('./lib/author.js');
 var app = http.createServer(function (request, response) {
   var _url = request.url;
   var queryData = url.parse(_url, true).query;    //querystring 따는법
@@ -34,6 +35,21 @@ var app = http.createServer(function (request, response) {
   }
   else if (pathname === "/delete_process") {
     topic.delete_process(request,response);
+  }
+  else if(pathname==="/author"){
+    author.home(request,response);
+  }
+  else if(pathname==="/author_create"){
+    author.create(request,response);
+  }
+  else if(pathname==="/author_update"){
+    author.update(request,response);
+  }
+  else if(pathname==="/author_update_process"){
+    author.update_process(request,response);
+  }
+  else if(pathname==="/author_delete_process"){
+    author.delete_process(request,response);
   }
   else {//pathname이 /이 아닌경우
     response.writeHead(404);
