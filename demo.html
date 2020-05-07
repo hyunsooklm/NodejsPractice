@@ -4,18 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+     <script src="http://code.jquery.com/jquery-latest.js"></script>
+  
 </head>
 <body>
-    <a href="https://www.naver.com/" onclick="delchk();">삭제하기</a>
-    <script type="text/javascript">
-        function delchk(){
-            if(confirm("삭제하시겠습니까?")){
-                location.href = "https://www.google.com/search?q=kakaomap&rlz=1C1SQJL_enKR888KR888&oq=kakao&aqs=chrome.2.69i57j0l5j69i60l2.2589j0j4&sourceid=chrome&ie=UTF-8";
-                return true;
-            } else {
-                return false;
-            }
-        }
-    </script>
+    <form method="post" id="frm">
+        <select id="store_name" class="select1" name="store[name]">
+          <option value="">Select Action</option>
+          <option value="delete">Delete</option>
+          <option value="changestatus">Change Status</option>
+        </select>
+        
+        <input type="submit" value="Submit" name="commit"/>
+        </form>    
+        <script>
+        $("#frm").submit(function(event){
+            // var valDDL = $(this).val();  
+                   //event.preventDefault();
+                   alert($("#store_name").val());
+                   console.log("-->",$("#store_name").val());
+                    var valDDL = $("#store_name").val();
+                    if(valDDL=="")
+                    {
+                        event.preventDefault();
+                        alert("select dropdown option");
+                    } 
+           
+            });
+        </script>
 </body>
 </html>
