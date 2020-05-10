@@ -1,3 +1,21 @@
+const express = require('express')
+const app = express()
+const port = 3000
+
+app.get('/', (req, res) => res.send('Hello World!'))
+app.get('/page',function(req,res){
+  return res.send('HI');
+})
+app.get('/page',function(req,res){
+  return res.send('HI');
+}) //페이지 라우팅, path에 따라 다른 콜백함수가 실행되도록 처리.
+
+
+app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
+
+
+
+/*
 // 괄호 짝찾을땐 ctrl+shift+\
 // 자바스크립트 매개변수에 원시형-> 다른 주소 객체,배열형 -> 같은주소 값을 넘긴다.
 var http = require('http');
@@ -201,3 +219,4 @@ var app = http.createServer(function (request, response) {
 
 
 app.listen(8088);
+*/
