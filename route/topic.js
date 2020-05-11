@@ -3,30 +3,8 @@ const route = express.Router();
 const fs = require('fs');
 const Template = require('../lib/Template');
 const sanitizehtml = require('sanitize-html');
-route.get('*', (req, res, next) => {//get방식을 들어온 모든 경로의 미들웨어장착
-    fs.readdir('./contents', function (err, filelist) {
-        req.list = Template.List(filelist);  //req의 list프로퍼티 장착
-        next();
-    });
-})
 
 
-route.get('/', (req, res, next) => {
-    var body = "";
-    var html = "";
-    var list = req.list;
-    var title = 'Node js';
-    var description = "Hello Node js!";
-    body += `<p>${description}</p>`;
-    body += `<img src="/image/hello.jpg" style="width:200px" display:block; margin-top:10px; ;>`
-    html = Template.HTML(title, list, body, '');
-    res.send(html);
-}
-)
-route.get('/index', (req, res, next) => {
-    res.redirect('/topic');
-}
-)
 
 route.get('/page_create', (req, res, next) => {
     body = `<form action="/topic/page_create" method="POST" >
@@ -146,10 +124,6 @@ route.post('/page_delete', (req, res) => {
 });
 
 
-route.use(function (err, req, res, next) {
-    console.log(err.stack);
-    res.send('Page_id is not Existed');
-});
 
 
 
