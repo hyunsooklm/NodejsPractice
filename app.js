@@ -32,3 +32,4 @@ app.use(function (err, req, res, next) {
   res.send('Page_id is not Existed');
 });
 app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
+//예외 및 에러처리는 route해서 하지 못하면 나중으로 넘어온다.
