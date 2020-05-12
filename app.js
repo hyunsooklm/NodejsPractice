@@ -7,6 +7,9 @@ const Template=require('./lib/Template');
 const fs=require('fs');
 const route_topic=require("./route/topic");
 const route_index=require("./route/index");
+const helmet=require("helmet");
+
+app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: false })) //app에 middleware를 장착한다. bodyParser.urlencoded({ extended: false })는 middleware를 반환한다.
 app.use(compression());//Requests that pass through the middleware will be compressed.
 app.use(express.static('./public'));
