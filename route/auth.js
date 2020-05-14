@@ -4,11 +4,7 @@ const fs = require('fs');
 const Template = require('../lib/Template');
 const sanitizehtml = require('sanitize-html');
 
-let info = {
-  id: "hyunsooklm",
-  password: "kimhs1019@",
-  nickname: "kimhyunsoo"
-}
+
 route.get('/login', (req, res, next) => {
   var body = "";
   var list = req.list;
@@ -26,25 +22,21 @@ route.get('/login', (req, res, next) => {
   res.send(html);
 })
 
-function log(req,res){
-  req.session.is_login= true;
-  req.session.nickname= info.nickname;
-  return true;
-}
-route.post('/login', (req, res, next) => {  //post로 받는거라면, app.post로 이미 받기때문에 경로를 create_process로 할 필요 없다.
-  let post = req.body;
-  if (post.id === info.id && post.password === info.password) {
-    req.session.is_login=true;
-    req.session.nickname=info.nickname;
-    req.session.save((err)=>{ //session store에 저장 한 후 뒤에작업을 처리!!!!
-      res.redirect(302, '/');
-      return false;  
-    });
-  }
-  else {
-    res.send("who?");
-  }
-});
+
+// route.post('/login', (req, res, next) => {  //post로 받는거라면, app.post로 이미 받기때문에 경로를 create_process로 할 필요 없다.
+//   let post = req.body;
+//   if (post.id === info.id && post.password === info.password) {
+//     req.session.is_login=true;
+//     req.session.nickname=info.nickname;
+//     req.session.save((err)=>{ //session store에 저장 한 후 뒤에작업을 처리!!!!
+//       res.redirect(302, '/');
+//       return false;  
+//     });
+//   }
+//   else {
+//     res.send("who?");
+//   }
+// });
 route.get('/logout', (req, res, next) => {  //post로 받는거라면, app.post로 이미 받기때문에 경로를 create_process로 할 필요 없다
   req.session.destroy((err) => {
     if (err)
