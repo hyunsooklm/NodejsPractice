@@ -42,13 +42,14 @@ route.post('/page_create', (req, res, next) => {  //post로 받는거라면, app
   });
 });
 route.get('/page_update/:pageId', (req, res, next) => {
-  if(!req.session.is_login){
-    res.redirect('../');
-  }
   let filename = req.params.pageId;
   fs.readFile(`./contents/${filename}`, 'utf8', (err2, data) => {
     if (err2) {
       next(err2);
+    }
+    if(!req.session.is_login){
+      res.redirect('../');
+      return false;
     }
     body = `<form action="/topic/page_update" method="POST" >
             <p><input type="text" name="title" value=${filename}></p>
@@ -88,9 +89,6 @@ route.post('/page_update', (req, res) => {
   });
 });
 route.get('/:pageId', function (req, res, next) {
-  if(!req.session.is_login){
-    res.redirect('../');
-  }
   var list = req.list;
   var body = ""
   let title = req.params.pageId;
@@ -98,6 +96,11 @@ route.get('/:pageId', function (req, res, next) {
     if (err) {
       next(err);
     }
+    if(!req.session.is_login){
+      res.redirect('../');
+      return false;
+    }
+    console.log(`is_login?:${req.session.is_login}`);
     var sanitize_title = sanitizehtml(title);
     var sanitize_description = sanitizehtml(description, { allowedTags: ['a', 'h1'] });
     body += `<p>${sanitize_description}</p>`;

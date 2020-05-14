@@ -26,11 +26,6 @@ route.get('/login', (req, res, next) => {
   res.send(html);
 })
 
-function log(req,res){
-  req.session.is_login= true;
-  req.session.nickname= info.nickname;
-  return true;
-}
 route.post('/login', (req, res, next) => {  //post로 받는거라면, app.post로 이미 받기때문에 경로를 create_process로 할 필요 없다.
   let post = req.body;
   if (post.id === info.id && post.password === info.password) {
