@@ -9,19 +9,24 @@ const route_topic=require("./route/topic");
 const route_index=require("./route/index");
 const route_auth=require("./route/auth");
 const session = require('express-session');
+const helmet=require('helmet');
 let FileStore=require('session-file-store')(session);
 let fileStoreOption={};
 
 app.use(bodyParser.urlencoded({ extended: false })) //app에 middleware를 장착한다. bodyParser.urlencoded({ extended: false })는 middleware를 반환한다.
 app.use(compression());//Requests that pass through the middleware will be compressed.
 app.use(express.static('./public'));
-
+app.use(helmet());
 app.use(session({
   secret: 'keyboard cat',//보안필수, 버전관리할 경우 빼고 넣어야함
   resave: false,
   saveUninitialized: true, //세션이 필요하기 전까지는 세션을 구동시키지 않는다. 서버의 부담을 줄 수있다. (false)의 경우
   store:new FileStore(fileStoreOption) //세션을 파일에 저장하겠다. 세션스토어==파일
-}),(req,res,next)=>next())     //이 미들웨어가 req의 session 프로퍼티를 생성해준다.
+}))     //이 미들웨어가 req의 session 프로퍼티를 생성해준다.
+
+
+
+/*passport는 내부적으로 session을 활용하기때문에, session미들웨어가 장착되고 난 뒤, 즉 session활성화 코드 뒤에나와야한다.*/ 
 
 app.get('*', (req, res, next) => {//get방식을 들어온 모든 경로의 미들웨어장착
   fs.readdir('./contents', function (err, filelist) {
