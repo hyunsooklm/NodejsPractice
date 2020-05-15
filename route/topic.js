@@ -8,7 +8,7 @@ const auth = require('../auth_UI/auth_check');
 
 
 route.get('/page_create', (req, res, next) => {
-  if (!req.session.is_login) {
+  if (!req.user) {
     res.redirect('../');
     return false;
   }
@@ -44,7 +44,7 @@ route.post('/page_create', (req, res, next) => {  //post로 받는거라면, app
 route.get('/page_update/:pageId', (req, res, next) => {
   let filename = req.params.pageId;
   fs.readFile(`./contents/${filename}`, 'utf8', (err2, data) => {
-    if (!req.session.is_login) {
+    if (!req.user) {
       res.redirect('../');
       return false;
     }
@@ -82,7 +82,6 @@ route.post('/page_update', (req, res) => {
       if (err2)
         throw err;
       else {
-        console.log("update_process");
         res.redirect(`/topic/${title}`);
       }
     })
@@ -93,7 +92,7 @@ route.get('/:pageId', function (req, res, next) {
   var body = ""
   let title = req.params.pageId;
   fs.readFile(`contents/${title}`, 'utf8', function (err, description) {
-    if (!req.session.is_login) {
+    if (!req.user) {
       res.redirect('../');
       return false;
     }

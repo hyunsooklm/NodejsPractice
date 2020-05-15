@@ -1,3 +1,11 @@
+//git branch -vv ->local-remote branch간 관계
+//git branch -rv ->remote branch의 최근커밋
+//git checkout -b local (remote repository/remote branch) 해당 레포지토리 브랜치를 트랙하는 local브랜치 생성
+//git fetch remote repository-> remote repository의 최신정보를 가져온다.
+//어디로? 현재 브랜치의 원격브랜치로.,
+//->해당 로컬브랜치에서 원격브랜치를 머지한다.
+//->그 후 로컬브랜치를 푸쉬한다.
+//객체 비었는지 확인-> Object.keys(객체).length===0?
 const express = require('express')
 const app = express()
 const port = 3000
@@ -7,9 +15,9 @@ const Template = require('./lib/Template');
 const fs = require('fs');
 const route_topic = require("./route/topic");
 const route_index = require("./route/index");
-const route_auth = require("./route/auth");
 const session = require('express-session');
 const helmet = require('helmet');
+const flash=require('connect-flash')
 let FileStore = require('session-file-store')(session);
 let fileStoreOption = {};
 let info = {
@@ -17,6 +25,7 @@ let info = {
   password: "kimhs1019@",
   nickname: "kimhyunsoo"
 }
+
 app.use(bodyParser.urlencoded({ extended: false })) //app에 middleware를 장착한다. bodyParser.urlencoded({ extended: false })는 middleware를 반환한다.
 app.use(compression());//Requests that pass through the middleware will be compressed.
 app.use(express.static('./public'));
@@ -27,66 +36,27 @@ app.use(session({
   saveUninitialized: true, //세션이 필요하기 전까지는 세션을 구동시키지 않는다. 서버의 부담을 줄 수있다. (false)의 경우
   store: new FileStore(fileStoreOption) //세션을 파일에 저장하겠다. 세션스토어==파일
 }))     //이 미들웨어가 req의 session 프로퍼티를 생성해준다.
+app.use(flash()); //flash미들웨어 장착 -> session에 저장했다가, 쓰면 지움
+//1회용 메세지, flash(parameter)를 session store에 저장했다가, flash로 읽으면 삭제
 
-var passport = require('passport')
-  , LocalStrategy = require('passport-local').Strategy;
-/*passport는 내부적으로 session을 활용하기때문에, session미들웨어가 장착되고 난 뒤, 즉 session활성화 코드 뒤에나와야한다.*/
-
-passport.use(new LocalStrategy({
-usernameField:'id',
-passwordField:'password'
-},  //원래 parameter은 id=username, password=password로 약속되어있음, 바꾼것.
-function (username, password, done) {
-  if(username===info.id&&password===info.password){
-    console.log(1);
-    return done(null, user);
-  }
-  else if(password!=info.password){
-    console.log(2);
-    return done(null, false, { message: 'Incorrect password.' });
-  }else{
-    console.log(3);
-    return done(null, false, { message: 'Incorrect username.' });  
-  }
-}
-
-
-
-  //   User.findOne({ username: username }, function (err, user) {
-  //     if (err) { return done(err); }
-  //     if (!user) {
-  //       return done(null, false, { message: 'Incorrect username.' });
-  //     }
-  //     if (!user.validPassword(password)) {
-  //       return done(null, false, { message: 'Incorrect password.' });
-  //     }
-  //     return done(null, user);
-  //   });
-  // }
-));
+let passport=require('./lib/Passport')(app);
 
 app.post('/auth/login',
-  passport.authenticate('local', { //strategy, username & password로 로그인하는법
-    successRedirect: '/',
-    failureRedirect: '/auth/login'
-  }));//성공하면 홈페이지, 실패하면 재로그인,
-
-// route.post('/login', (req, res, next) => {  //post로 받는거라면, app.post로 이미 받기때문에 경로를 create_process로 할 필요 없다.
-//   let post = req.body;
-//   if (post.id === info.id && post.password === info.password) {
-//     req.session.is_login=true;
-//     req.session.nickname=info.nickname;
-//     req.session.save((err)=>{ //session store에 저장 한 후 뒤에작업을 처리!!!!
-//       res.redirect(302, '/');
-//       return false;  
-//     });
-//   }
-//   else {
-//     res.send("who?");
-//   }
-// });
-
-app.get('*', (req, res, next) => {//get방식을 들어온 모든 경로의 미들웨어장착
+  passport.authenticate(
+    'local',      //strategy, username & password로 로그인하는법
+    {failureRedirect: '/auth/login',
+    failureFlash: true    
+  }
+    ),
+    function(req, res) {
+      req.session.save(function () {
+        res.redirect('/');
+      })
+    }
+  );//성공하면 홈페이지, 실패하면 재로그인,
+  
+  const route_auth = require("./route/auth")(passport);
+  app.get('*', (req, res, next) => {//get방식을 들어온 모든 경로의 미들웨어장착
   fs.readdir('./contents', function (err, filelist) {
     req.list = Template.List(filelist);  //req의 list프로퍼티 장착
     next();
@@ -106,7 +76,6 @@ app.use(function (req, res, next) {
 });
 
 app.use(function (err, req, res, next) {
-  console.log(err.stack);
   res.send('Page_id is not Existed');
 });
 app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))

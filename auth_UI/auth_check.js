@@ -4,8 +4,8 @@ module.exports={
     },
     auth_ui : function auth_UI(req, res) {
         var auth_ui = `<h1><a href="../auth/login">login</a></h1>`
-        if (this.is_login(req,res)) {
-            auth_ui = `<p>${req.session.nickname}|<a href="../auth/logout">logout</a></p>`
+        if (req.user) {
+            auth_ui = `<p>${req.user.nickname}|<a href="../auth/logout">logout</a></p>`
         }
         return auth_ui;
     }
