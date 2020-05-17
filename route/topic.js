@@ -29,7 +29,7 @@ route.get('/page_create', (req, res, next) => {
 }
 )
 
-route.post('/page_create', (req, res, next) => {  //post로 받는거라면, app.post로 이미 받기때문에 경로를 create_process로 할 필요 없다.
+route.post('/page_create', (req, res, next) => {  
   let post = req.body;
   let title = sanitizehtml(post.title);
   let description = sanitizehtml(post.description);
@@ -123,7 +123,7 @@ route.get('/:pageId', function (req, res, next) {
     res.send(html);
   }
   );
-}) //페이지 라우팅, path에 따라 다른 콜백함수가 실행되도록 처리.
+}) 
 
 
 route.post('/page_delete', (req, res) => {

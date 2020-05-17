@@ -28,7 +28,7 @@ module.exports = function (passport) {
 
   route.post('/login',
     passport.authenticate(
-      'local',      //strategy, username & password로 로그인하는법
+      'local',     
       {
         failureRedirect: '/auth/login',
         failureFlash: true
@@ -39,10 +39,10 @@ module.exports = function (passport) {
         res.redirect('/');
       })
     }
-  );//성공하면 홈페이지, 실패하면 재로그인,
-  route.get('/logout', (req, res, next) => {  //post로 받는거라면, app.post로 이미 받기때문에 경로를 create_process로 할 필요 없다
-    req.logout();//req객체 user프로퍼티 없애주고, login session 지운다.
-    req.session.save(() => {  //session store에 session상태 저장.
+  );
+  route.get('/logout', (req, res, next) => {  
+    req.logout();
+    req.session.save(() => { 
       res.redirect(302, '/');
     })
   }
