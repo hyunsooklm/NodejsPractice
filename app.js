@@ -13,8 +13,6 @@ const bodyParser = require("body-parser");
 const compression = require('compression')
 const Template = require('./lib/Template');
 const fs = require('fs');
-const route_topic = require("./route/topic");
-const route_index = require("./route/index");
 const session = require('express-session');
 const helmet = require('helmet');
 const flash=require('connect-flash')
@@ -41,21 +39,10 @@ app.use(flash()); //flash미들웨어 장착 -> session에 저장했다가, 쓰�
 
 let passport=require('./lib/Passport')(app);
 
-app.post('/auth/login',
-  passport.authenticate(
-    'local',      //strategy, username & password로 로그인하는법
-    {failureRedirect: '/auth/login',
-    failureFlash: true    
-  }
-    ),
-    function(req, res) {
-      req.session.save(function () {
-        res.redirect('/');
-      })
-    }
-  );//성공하면 홈페이지, 실패하면 재로그인,
-  
+  const route_topic = require("./route/topic");
+  const route_index = require("./route/index");
   const route_auth = require("./route/auth")(passport);
+  
   app.get('*', (req, res, next) => {//get방식을 들어온 모든 경로의 미들웨어장착
   fs.readdir('./contents', function (err, filelist) {
     req.list = Template.List(filelist);  //req의 list프로퍼티 장착
