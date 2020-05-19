@@ -48,7 +48,6 @@ module.exports = function (passport) {
   );
 
   route.get('/register', (req, res, next) => {
-    let user_arr = db.get('user').value();
     var body = "";
     let feed_back = req.flash();
     if (feed_back.error) {
@@ -75,22 +74,16 @@ module.exports = function (passport) {
 
   route.post('/register', (req, res, next) => {
     post = req.body;
-    let id = post.id;
-    let pwd = post.password;
-    let password_check = post.password_check;
-    let Displayname = post.Displayname;
-    let user_arr = db.get('user').value();
     db.defaults({ user: [] }).write();
-    console.log((!(_.find(user_arr,(e)=>e.id===id,0))));
-    if (pwd != password_check ||(_.find(user_arr,(e)=>e.id===id,0))||(_.find(user_arr,(e)=>e.Displayname===Displayname,0)) ) {
-      if (pwd != password_check) {
+    if (post.password != post.password_check ||db.get('user').find({id:post.id}).value()||(db.get('user').find({Displayname:post.Displayname}).value())) {
+      if (post.password != post.password_check) {
         req.flash("error", "password!=password_check");
       }
-      else if ((_.find(user_arr,(e)=>e.Displayname===Displayname,0))) {   
-        req.flash("error", "Displayname is existed.");
-      }
-      else if ((_.find(user_arr,(e)=>e.id===id,0))) {   
+      else if (db.get('user').find({id:post.id}).value()) {   
         req.flash("error", "id is existed.");
+      }
+      else if (db.get('user').find({Displayname:post.Displayname}).value()) {   
+        req.flash("error", "Displayname is existed.");
       }
       req.session.save(() => {
         res.redirect(302, '/auth/register');
@@ -100,9 +93,9 @@ module.exports = function (passport) {
     else {
       db.get("user").push({
         unique_id: shortid.generate(),
-        id: id,
-        password: pwd,
-        Displayname: Displayname
+        id: post.id,
+        password: post.password,
+        Displayname: post.Displayname
       }).write();
       res.redirect(302, '/');
     }
