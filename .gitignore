@@ -1,0 +1,10 @@
+*.json
+
+Testcode/
+
+sessions/
+
+contents/
+
+*.html
+
