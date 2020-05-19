@@ -1,11 +1,11 @@
 module.exports={
     is_login: function (req, res) {
-        return req.session.is_login;
+        return req?true:false;
     },
     auth_ui : function auth_UI(req, res) {
-        var auth_ui = `<h1><a href="../auth/login">login</a></h1>`
+        var auth_ui = `<a href="/auth/login">login</a>|<a href="/auth/register">register</a>`
         if (req.user) {
-            auth_ui = `<p>${req.user.nickname}|<a href="../auth/logout">logout</a></p>`
+            auth_ui = `${req.user.nickname}|<a href="/auth/logout">logout</a>`
         }
         return auth_ui;
     }

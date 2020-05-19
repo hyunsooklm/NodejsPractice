@@ -40,7 +40,6 @@ let passport=require('./lib/Passport')(app);
   });
 })
 
-
 app.use('/', route_index);
 app.use('/topic', route_topic);
 app.use('/auth', route_auth);
