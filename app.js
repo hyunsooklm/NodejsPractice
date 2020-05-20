@@ -10,11 +10,6 @@ const helmet = require('helmet');
 const flash=require('connect-flash')
 let FileStore = require('session-file-store')(session);
 let fileStoreOption = {};
-let info = {
-  id: "hyunsooklm",
-  password: "kimhs1019@",
-  nickname: "kimhyunsoo"
-}
 app.use(bodyParser.urlencoded({ extended: false })) 
 app.use(compression());
 app.use(express.static('./public'));

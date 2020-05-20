@@ -2,20 +2,17 @@ const express = require('express');
 const route = express.Router();
 const Template = require('../lib/Template');
 const auth = require('../auth_UI/auth_check');
-const low = require('lowdb');
-const FileSync = require('lowdb/adapters/FileSync');
-const adapter = new FileSync('db.json');
-const db = low(adapter);
+const db=require('../lib/db');
 const shortid = require('shortid');
 const _ = require('lodash');
 module.exports = function (passport) {
   route.get('/login', (req, res, next) => {
     req.session.save(() => {
       var body = "";
-      let feed_back = req.flash();
-      if (feed_back.error) {
-        body += `<div style="color:red;">${feed_back.error}</div>`;
-      }
+      // let feed_back = req.flash();
+      // if (feed_back.error) {
+      //   body += `<div style="color:red;">${feed_back.error}</div>`;
+      // }
       var list = req.list;
       var title = 'login';
       var description = `
@@ -91,13 +88,21 @@ module.exports = function (passport) {
       return false;
     }
     else {
-      db.get("user").push({
+      let user={
         unique_id: shortid.generate(),
         id: post.id,
         password: post.password,
         Displayname: post.Displayname
-      }).write();
-      res.redirect(302, '/');
+      }
+      db.get("user").push(user).write();
+      req.login(user, function(err) {
+        if (err) { return next(err); }
+        else{
+          req.session.save(()=>{
+            return res.redirect('/');
+          })
+        }
+      });
     }
   })
 
