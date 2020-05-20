@@ -7,6 +7,7 @@ const Template = require('./lib/Template');
 const fs = require('fs');
 const session = require('express-session');
 const helmet = require('helmet');
+const db=require('./lib/db.js');
 const flash=require('connect-flash')
 let FileStore = require('session-file-store')(session);
 let fileStoreOption = {};
@@ -29,11 +30,11 @@ let passport=require('./lib/Passport')(app);
   const route_auth = require("./route/auth")(passport);
   
   app.get('*', (req, res, next) => {//get방식을 들어온 모든 경로의 미들웨어장착
-  fs.readdir('./contents', function (err, filelist) {
-    req.list = Template.List(filelist);  
+    let list=db.get('topic').take(100).value()
+    req.list = Template.List(list);  
     next();
   });
-})
+
 
 app.use('/', route_index);
 app.use('/topic', route_topic);

@@ -71,7 +71,6 @@ module.exports = function (passport) {
 
   route.post('/register', (req, res, next) => {
     post = req.body;
-    db.defaults({ user: [] }).write();
     if (post.password != post.password_check ||db.get('user').find({id:post.id}).value()||(db.get('user').find({Displayname:post.Displayname}).value())) {
       if (post.password != post.password_check) {
         req.flash("error", "password!=password_check");
