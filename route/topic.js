@@ -15,8 +15,7 @@ route.get('/page_create', (req, res, next) => {
     return false;
   }
   body = `<form action="/topic/page_create" method="POST" >
-    <p><input type="text" name="title" placeholder="title"></p>
-    <p>
+    <p><input type="text" name="title" 
       <textarea name="description" placeholder="description"></textarea>
     </p>
     <p>
@@ -41,8 +40,7 @@ route.post('/page_create', (req, res, next) => {
     title: title,
     description: description,
     author: req.user.Displayname
-  })
-    .write()
+  }).write()
 
   res.redirect(`/topic/${id}`);
 
@@ -118,27 +116,22 @@ route.get('/:pageId', function (req, res, next) {
   console.log(`글쓴사람:${author}/읽고있는사람:${req.user.Displayname}`);
 
   body += `<p>${sanitize_description}</p>`;
-
-  var q = "abc";
+  var a="abcde";
   var control = `
         <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
         <script>  
         $(document).ready(()=>{
-          $('input[type="submit"]').on('click',(event)=>{
-                  alert(author);
-                  alert(reader);
+          $('input[type="submit"]').on('click',(event)=>{                  
                   if(!(confirm("정말로 삭제하시겠습니까?"))){
                     event.preventDefault();  
-                  }
-                
-                
+                  }                
             })
           })
         </script>
-          <a href="/topic/page_update/${sanitize_id}">update</a>
-          <form action="/topic/page_delete" method="POST">
-          <input type="hidden" name="id" value="${sanitize_id}">
-          <input type="submit" value="delete" onsubmit="alert('delete?')"/>
+          <a href='/topic/page_update/${sanitize_id}'>update</a>
+          <form action='/topic/page_delete' method='POST'>
+          <input type='hidden' name='id' value='${sanitize_id}'>
+          <input type='submit' value='delete' />
           </form>
           `
   html = Template.HTML(sanitize_id, list, body, control, auth.auth_ui(req, res));
@@ -150,8 +143,15 @@ route.get('/:pageId', function (req, res, next) {
 
 route.post('/page_delete', (req, res) => {
   let post = req.body;
+  if(req.user.Displayname!=post.id){
+    req.flash("error","Not yours.Can not delete");
+    req.session.save(()=>{
+      res.redirect(302,`/topic/${post.id}`)
+    })
+    return false;
+  }
   db.get('topic').remove({ id: post.id }).write();
-  res.redirect(302, '/');
+  return res.redirect(302, '/');
 });
 
 

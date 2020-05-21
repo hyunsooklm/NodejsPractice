@@ -5,14 +5,16 @@ const auth = require('../auth_UI/auth_check');
 const db=require('../lib/db');
 const shortid = require('shortid');
 const _ = require('lodash');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 module.exports = function (passport) {
   route.get('/login', (req, res, next) => {
     req.session.save(() => {
       var body = "";
-      // let feed_back = req.flash();
-      // if (feed_back.error) {
-      //   body += `<div style="color:red;">${feed_back.error}</div>`;
-      // }
+      let feed_back = req.flash();
+      if (feed_back.error) {
+        body += `<div style="color:red;">${feed_back.error}</div>`;
+      }
       var list = req.list;
       var title = 'login';
       var description = `
