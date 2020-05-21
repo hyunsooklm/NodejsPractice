@@ -2,7 +2,7 @@ const express = require('express');
 const route = express.Router();
 const Template = require('../lib/Template');
 const auth = require('../auth_UI/auth_check');
-const db=require('../lib/db');
+const db = require('../lib/db');
 const shortid = require('shortid');
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
@@ -73,14 +73,14 @@ module.exports = function (passport) {
 
   route.post('/register', (req, res, next) => {
     post = req.body;
-    if (post.password != post.password_check ||db.get('user').find({id:post.id}).value()||(db.get('user').find({Displayname:post.Displayname}).value())) {
+    if (post.password != post.password_check || db.get('user').find({ id: post.id }).value() || (db.get('user').find({ Displayname: post.Displayname }).value())) {
       if (post.password != post.password_check) {
         req.flash("error", "password!=password_check");
       }
-      else if (db.get('user').find({id:post.id}).value()) {   
+      else if (db.get('user').find({ id: post.id }).value()) {
         req.flash("error", "id is existed.");
       }
-      else if (db.get('user').find({Displayname:post.Displayname}).value()) {   
+      else if (db.get('user').find({ Displayname: post.Displayname }).value()) {
         req.flash("error", "Displayname is existed.");
       }
       req.session.save(() => {
@@ -89,23 +89,27 @@ module.exports = function (passport) {
       return false;
     }
     else {
-      let user={
+      let user = {
         unique_id: shortid.generate(),
         id: post.id,
         password: post.password,
         Displayname: post.Displayname
       }
-      db.get("user").push(user).write();
-      req.login(user, function(err) {
-        if (err) { return next(err); }
-        else{
-          req.session.save(()=>{
-            return res.redirect('/');
-          })
-        }
+      bcrypt.hash(user.password, saltRounds, function (err, hash) {
+        user.password = hash;
+        db.get("user").push(user).write();
+        req.login(user, function (err) {
+          if (err) { return next(err); }
+          else {
+            req.session.save(() => {
+              return res.redirect('/');
+            })
+          }
+        });
       });
     }
-  })
+  }
+  );
 
   route.get('/logout', (req, res, next) => {
     req.logout();
