@@ -4,7 +4,6 @@ const Template = require('../lib/Template');
 const auth = require('../auth_UI/auth_check');
 const db = require('../lib/db');
 const shortid = require('shortid');
-const _ = require('lodash');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 module.exports = function (passport) {
@@ -98,7 +97,7 @@ module.exports = function (passport) {
       bcrypt.hash(user.password, saltRounds, function (err, hash) {
         user.password = hash;
         db.get("user").push(user).write();
-        req.login(user, function (err) {
+        req.login(user, function (err) { //passport.seriaize로 감.
           if (err) { return next(err); }
           else {
             req.session.save(() => {

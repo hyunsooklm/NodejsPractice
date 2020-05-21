@@ -1,6 +1,5 @@
 const express = require('express');
 const route = express.Router();
-const fs = require('fs');
 const Template = require('../lib/Template');
 const sanitizehtml = require('sanitize-html');
 const auth = require('../auth_UI/auth_check');
@@ -15,12 +14,9 @@ route.get('/page_create', (req, res, next) => {
     return false;
   }
   body = `<form action="/topic/page_create" method="POST" >
-    <p><input type="text" name="title" 
-      <textarea name="description" placeholder="description"></textarea>
-    </p>
-    <p>
-      <input type="submit">
-    </p>
+    <p><input type="text" name="title" placeholder="title"></p> 
+    <p><textarea name="description" placeholder="description"></textarea></p>
+    <p><input type="submit"></p>
   </form>`;
 
   var list = req.list;
@@ -110,13 +106,10 @@ route.get('/:pageId', function (req, res, next) {
   let topic = db.get('topic').find({ id: req.params.pageId }).value()
   let id = topic.id
   let description = topic.description;
-  var author = topic.author;
   var sanitize_id = sanitizehtml(id);
   var sanitize_description = sanitizehtml(description, { allowedTags: ['a', 'h1'] });
-  console.log(`글쓴사람:${author}/읽고있는사람:${req.user.Displayname}`);
-
+  
   body += `<p>${sanitize_description}</p>`;
-  var a="abcde";
   var control = `
         <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
         <script>  
@@ -135,7 +128,6 @@ route.get('/:pageId', function (req, res, next) {
           </form>
           `
   html = Template.HTML(sanitize_id, list, body, control, auth.auth_ui(req, res));
-
   res.send(html);
 
 })
@@ -153,9 +145,4 @@ route.post('/page_delete', (req, res) => {
   db.get('topic').remove({ id: post.id }).write();
   return res.redirect(302, '/');
 });
-
-
-
-
-
 module.exports = route;

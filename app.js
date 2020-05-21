@@ -4,7 +4,6 @@ const port = 3000
 const bodyParser = require("body-parser");
 const compression = require('compression')
 const Template = require('./lib/Template');
-const fs = require('fs');
 const session = require('express-session');
 const helmet = require('helmet');
 const db=require('./lib/db.js');
