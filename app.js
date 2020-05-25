@@ -1,3 +1,4 @@
+const db=require('./lib/db.js');
 const express = require('express')
 const app = express()
 const port = 3000
@@ -6,7 +7,6 @@ const compression = require('compression')
 const Template = require('./lib/Template');
 const session = require('express-session');
 const helmet = require('helmet');
-const db=require('./lib/db.js');
 const flash=require('connect-flash')
 let FileStore = require('session-file-store')(session);
 let fileStoreOption = {};
